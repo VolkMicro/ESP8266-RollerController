@@ -1,0 +1,24 @@
+name: Build and OTA Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ESP_HOST: ${{ secrets.ESP_HOST }}
+      ESP_PASS: ${{ secrets.ESP_PASS }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install PlatformIO
+        run: pip install -U platformio
+      - name: Build
+        run: pio run -e d1_mini
+      - name: OTA Upload
+        if: env.ESP_HOST != '' && env.ESP_PASS != ''
+        run: pio run -e d1_mini -t upload --upload-port $ESP_HOST --upload-password $ESP_PASS

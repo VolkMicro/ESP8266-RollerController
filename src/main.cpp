@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <AccelStepper.h>
+#include <ArduinoOTA.h>
 #include "Secrets.h"
 
 // MQTT topics
@@ -100,6 +101,11 @@ void setup() {
   Serial.begin(115200);
   Serial.println("=== Roller Blind Controller Starting ===");
   setup_wifi();
+
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+  ArduinoOTA.begin();
+  Serial.println("OTA ready");
+
   client.setServer(MQTT_HOST, 1883);
   client.setCallback(callback);
   stepper.setMaxSpeed(MOTOR_SPEED);
@@ -108,6 +114,7 @@ void setup() {
 }
 
 void loop() {
+  ArduinoOTA.handle();
   if (!client.connected()) {
     reconnect();
   }
