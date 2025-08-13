@@ -13,6 +13,8 @@ public:
     void update();
     void moveToPercent(int percent);
     void stop();
+    void recalibrate();
+    void resetCalibration();
     int  currentPositionPercent() const { return currentPosPercent; }
     RollerState state() const { return currentState; }
     void setPositionCallback(PositionCallback cb) { positionCb = std::move(cb); }

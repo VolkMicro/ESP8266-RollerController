@@ -37,6 +37,8 @@ void NetworkManager::handleReconnect() {
         mqttClient.subscribe(Config::TOPIC_CLOSE_SET);
         mqttClient.subscribe(Config::TOPIC_STOP_SET);
         mqttClient.subscribe(Config::TOPIC_POSITION_SET);
+        mqttClient.subscribe(Config::TOPIC_RECALIBRATE_SET);
+        mqttClient.subscribe(Config::TOPIC_RESET_CALIBRATION_SET);
     }
 }
 

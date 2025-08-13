@@ -14,10 +14,14 @@ void publishMeta() {
     network.publish(Config::META_OPEN, "{\"type\":\"pushbutton\"}", true);
     network.publish(Config::META_CLOSE, "{\"type\":\"pushbutton\"}", true);
     network.publish(Config::META_STOP, "{\"type\":\"pushbutton\"}", true);
+    network.publish(Config::META_RECALIBRATE, "{\"type\":\"pushbutton\"}", true);
+    network.publish(Config::META_RESET_CALIBRATION, "{\"type\":\"pushbutton\"}", true);
     network.publish(Config::TOPIC_POSITION, String(motor.currentPositionPercent()), true);
     network.publish(Config::TOPIC_OPEN, "0", true);
     network.publish(Config::TOPIC_CLOSE, "0", true);
     network.publish(Config::TOPIC_STOP, "0", true);
+    network.publish(Config::TOPIC_RECALIBRATE, "0", true);
+    network.publish(Config::TOPIC_RESET_CALIBRATION, "0", true);
 }
 
 void handleMessage(const char* topic, const String& msg) {
@@ -34,6 +38,10 @@ void handleMessage(const char* topic, const String& msg) {
         } else {
             Serial.println("Invalid position value");
         }
+    } else if (strcmp(topic, Config::TOPIC_RECALIBRATE_SET) == 0) {
+        motor.recalibrate();
+    } else if (strcmp(topic, Config::TOPIC_RESET_CALIBRATION_SET) == 0) {
+        motor.resetCalibration();
     }
 }
 

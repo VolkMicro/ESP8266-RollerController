@@ -44,6 +44,12 @@ mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/stop/on -m 1
 
 # Move to a specific position (0-100)
 mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/position/on -m 50
+
+# Recalibrate current position as fully closed
+mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/recalibrate/on -m 1
+
+# Reset stored calibration data
+mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/reset_calibration/on -m 1
 ```
 
 ## Over-the-Air Updates
