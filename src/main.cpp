@@ -92,7 +92,10 @@ void reconnect() {
       publishMeta();
     } else {
       Serial.printf("failed, rc=%d try again in 5 seconds\n", client.state());
-      delay(5000);
+      for (int i = 0; i < 10; i++) {
+        ArduinoOTA.handle();
+        delay(500);
+      }
     }
   }
 }
