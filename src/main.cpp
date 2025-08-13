@@ -5,12 +5,28 @@
 #include <EEPROM.h>
 #include "Secrets.h"
 
-// MQTT topics
-#define TOPIC_POSITION   "/devices/roller_1/controls/position"
-#define TOPIC_OPEN       "/devices/roller_1/controls/open"
-#define TOPIC_CLOSE      "/devices/roller_1/controls/close"
-#define TOPIC_STOP       "/devices/roller_1/controls/stop"
-#define META_PREFIX      "/devices/roller_1/meta/"
+// MQTT topic helpers
+#define DEVICE_PREFIX    "/devices/roller_1"
+#define CONTROLS_PREFIX  DEVICE_PREFIX "/controls/"
+
+// State topics
+#define TOPIC_POSITION   CONTROLS_PREFIX "position"
+#define TOPIC_OPEN       CONTROLS_PREFIX "open"
+#define TOPIC_CLOSE      CONTROLS_PREFIX "close"
+#define TOPIC_STOP       CONTROLS_PREFIX "stop"
+
+// Command topics
+#define TOPIC_POSITION_SET TOPIC_POSITION "/on"
+#define TOPIC_OPEN_SET     TOPIC_OPEN "/on"
+#define TOPIC_CLOSE_SET    TOPIC_CLOSE "/on"
+#define TOPIC_STOP_SET     TOPIC_STOP "/on"
+
+// Meta topics
+#define META_DEVICE        DEVICE_PREFIX "/meta"
+#define META_POSITION      TOPIC_POSITION "/meta"
+#define META_OPEN          TOPIC_OPEN "/meta"
+#define META_CLOSE         TOPIC_CLOSE "/meta"
+#define META_STOP          TOPIC_STOP "/meta"
 
 // Stepper config
 #define MOTOR_PIN_1 D1
@@ -54,11 +70,20 @@ void setup_wifi() {
 }
 
 void publishMeta() {
-  client.publish((META_PREFIX "name"), "Roller Blind");
-  client.publish((META_PREFIX "position/type"), "range[0:100]");
-  client.publish((META_PREFIX "open/type"), "pushbutton");
-  client.publish((META_PREFIX "close/type"), "pushbutton");
-  client.publish((META_PREFIX "stop/type"), "pushbutton");
+  // Device meta
+  client.publish(META_DEVICE, "{\"driver\":\"roller\",\"title\":{\"en\":\"Roller Blind\"}}", true);
+
+  // Control meta
+  client.publish(META_POSITION, "{\"type\":\"range\",\"min\":0,\"max\":100}", true);
+  client.publish(META_OPEN, "{\"type\":\"pushbutton\"}", true);
+  client.publish(META_CLOSE, "{\"type\":\"pushbutton\"}", true);
+  client.publish(META_STOP, "{\"type\":\"pushbutton\"}", true);
+
+  // Initial states
+  client.publish(TOPIC_POSITION, String(currentPosPercent).c_str(), true);
+  client.publish(TOPIC_OPEN, "0", true);
+  client.publish(TOPIC_CLOSE, "0", true);
+  client.publish(TOPIC_STOP, "0", true);
 }
 
 void moveToPercent(int percent) {
@@ -92,15 +117,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
   String msg = String((char*)payload);
   Serial.printf("MQTT Message: [%s] %s\n", topic, msg.c_str());
 
-  if (String(topic) == TOPIC_OPEN) {
+  if (String(topic) == TOPIC_OPEN_SET) {
     moveToPercent(100);
-  } else if (String(topic) == TOPIC_CLOSE) {
+  } else if (String(topic) == TOPIC_CLOSE_SET) {
     moveToPercent(0);
-  } else if (String(topic) == TOPIC_STOP) {
+  } else if (String(topic) == TOPIC_STOP_SET) {
     Serial.println("Stop command received");
     stepper.stop();
     moving = false;
-  } else if (String(topic) == TOPIC_POSITION) {
+  } else if (String(topic) == TOPIC_POSITION_SET) {
     int val = msg.toInt();
     if (val >= 0 && val <= 100) {
       moveToPercent(val);
@@ -115,10 +140,10 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     if (client.connect("ESP8266_Roller")) {
       Serial.println("connected");
-      client.subscribe(TOPIC_OPEN);
-      client.subscribe(TOPIC_CLOSE);
-      client.subscribe(TOPIC_STOP);
-      client.subscribe(TOPIC_POSITION);
+      client.subscribe(TOPIC_OPEN_SET);
+      client.subscribe(TOPIC_CLOSE_SET);
+      client.subscribe(TOPIC_STOP_SET);
+      client.subscribe(TOPIC_POSITION_SET);
       publishMeta();
     } else {
       Serial.printf("failed, rc=%d try again in 5 seconds\n", client.state());
