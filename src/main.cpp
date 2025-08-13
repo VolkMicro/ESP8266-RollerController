@@ -2,6 +2,7 @@
 #include <PubSubClient.h>
 #include <AccelStepper.h>
 #include <ArduinoOTA.h>
+#include <EEPROM.h>
 #include "Secrets.h"
 
 // MQTT topics
@@ -20,6 +21,16 @@
 #define MOTOR_SPEED 500
 #define MOTOR_ACCEL 300
 #define STEP_DELAY_US 1200
+
+#define EEPROM_SIZE 4
+
+// Uncomment to enable limit switch homing
+// #define USE_LIMIT_SWITCHES
+
+#ifdef USE_LIMIT_SWITCHES
+#define LIMIT_SWITCH_OPEN_PIN D5
+#define LIMIT_SWITCH_CLOSE_PIN D6
+#endif
 
 AccelStepper stepper(MOTOR_INTERFACE, MOTOR_PIN_1, MOTOR_PIN_3, MOTOR_PIN_2, MOTOR_PIN_4);
 
@@ -56,6 +67,25 @@ void moveToPercent(int percent) {
   stepper.moveTo(targetSteps);
   moving = true;
 }
+
+#ifdef USE_LIMIT_SWITCHES
+void homeStepper() {
+  Serial.println("Homing...");
+  pinMode(LIMIT_SWITCH_OPEN_PIN, INPUT_PULLUP);
+  pinMode(LIMIT_SWITCH_CLOSE_PIN, INPUT_PULLUP);
+  stepper.moveTo(-10000);
+  while (digitalRead(LIMIT_SWITCH_CLOSE_PIN) == HIGH) {
+    stepper.run();
+    ArduinoOTA.handle();
+  }
+  stepper.stop();
+  stepper.setCurrentPosition(0);
+  currentPosPercent = 0;
+  EEPROM.put(0, currentPosPercent);
+  EEPROM.commit();
+  Serial.println("Homing complete");
+}
+#endif
 
 void callback(char* topic, byte* payload, unsigned int length) {
   payload[length] = '\0';
@@ -114,6 +144,18 @@ void setup() {
   stepper.setMaxSpeed(MOTOR_SPEED);
   stepper.setAcceleration(MOTOR_ACCEL);
   Serial.println("Stepper initialized");
+
+  EEPROM.begin(EEPROM_SIZE);
+  EEPROM.get(0, currentPosPercent);
+  if (currentPosPercent < 0 || currentPosPercent > 100) {
+    currentPosPercent = 0;
+  }
+  long savedSteps = map(currentPosPercent, 0, 100, 0, 4096);
+  stepper.setCurrentPosition(savedSteps);
+
+#ifdef USE_LIMIT_SWITCHES
+  homeStepper();
+#endif
 }
 
 void loop() {
@@ -130,6 +172,8 @@ void loop() {
       currentPosPercent = map(stepper.currentPosition(), 0, 4096, 0, 100);
       Serial.printf("Reached position: %d%%\n", currentPosPercent);
       client.publish(TOPIC_POSITION, String(currentPosPercent).c_str(), true);
+      EEPROM.put(0, currentPosPercent);
+      EEPROM.commit();
     }
   }
 }
