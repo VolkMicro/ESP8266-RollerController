@@ -1,11 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <AccelStepper.h>
-
-// ===== CONFIG =====
-const char* ssid = ".RU-023";
-const char* password = "";
-const char* mqtt_server = "192.168.0.65";
+#include "Secrets.h"
 
 // MQTT topics
 #define TOPIC_POSITION   "/devices/roller_1/controls/position"
@@ -34,8 +30,8 @@ bool moving = false;
 
 void setup_wifi() {
   Serial.print("Connecting to WiFi: ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
+  Serial.println(WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -104,7 +100,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("=== Roller Blind Controller Starting ===");
   setup_wifi();
-  client.setServer(mqtt_server, 1883);
+  client.setServer(MQTT_HOST, 1883);
   client.setCallback(callback);
   stepper.setMaxSpeed(MOTOR_SPEED);
   stepper.setAcceleration(MOTOR_ACCEL);
