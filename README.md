@@ -26,6 +26,26 @@ Use [PlatformIO](https://platformio.org/) to build the project:
 pio run
 ```
 
+## MQTT Control
+
+The firmware follows the Wiren Board MQTT conventions. Controls are published
+under `/devices/roller_1/controls/` and accept commands on the `/on` subtopics.
+You can test the device with `mosquitto_pub` (or any other MQTT client):
+
+```bash
+# Fully open the blind
+mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/open/on -m 1
+
+# Fully close the blind
+mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/close/on -m 1
+
+# Stop movement
+mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/stop/on -m 1
+
+# Move to a specific position (0-100)
+mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/position/on -m 50
+```
+
 ## Over-the-Air Updates
 
 The firmware supports OTA updates using `ArduinoOTA`. Set an OTA password in
