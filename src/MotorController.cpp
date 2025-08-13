@@ -39,3 +39,24 @@ void MotorController::stop() {
     currentState = RollerState::Idle;
 }
 
+void MotorController::recalibrate() {
+    stepper.setCurrentPosition(0);
+    currentPosPercent = 0;
+    EEPROM.put(0, currentPosPercent);
+    EEPROM.commit();
+    if (positionCb) {
+        positionCb(currentPosPercent);
+    }
+}
+
+void MotorController::resetCalibration() {
+    int invalid = -1;
+    EEPROM.put(0, invalid);
+    EEPROM.commit();
+    stepper.setCurrentPosition(0);
+    currentPosPercent = 0;
+    if (positionCb) {
+        positionCb(currentPosPercent);
+    }
+}
+
