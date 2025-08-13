@@ -12,6 +12,7 @@ Update `include/Secrets.h` with your network and MQTT settings:
 const char* WIFI_SSID = "your_wifi_ssid";
 const char* WIFI_PASSWORD = "your_wifi_password";
 const char* MQTT_HOST = "your.mqtt.host";
+const char* OTA_PASSWORD = "your_ota_password";
 ```
 
 The file is listed in `.gitignore` so local changes won't be committed
@@ -24,3 +25,18 @@ Use [PlatformIO](https://platformio.org/) to build the project:
 ```bash
 pio run
 ```
+
+## Over-the-Air Updates
+
+The firmware supports OTA updates using `ArduinoOTA`. Set an OTA password in
+`include/Secrets.h` and upload over the network with PlatformIO:
+
+```bash
+pio run -t upload --upload-port <device-ip> --upload-password <your_ota_password>
+```
+
+## Continuous Integration
+
+GitHub Actions workflow `.github/workflows/ci.yml` builds the project on every
+push. When repository secrets `ESP_HOST` and `ESP_PASS` are configured, the
+workflow also uploads the firmware to the device via OTA.
