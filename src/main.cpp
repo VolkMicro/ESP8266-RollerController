@@ -16,15 +16,18 @@ void publishMeta() {
     network.publish(Config::META_STOP, "{\"type\":\"pushbutton\"}", true);
     network.publish(Config::META_RECALIBRATE, "{\"type\":\"pushbutton\"}", true);
     network.publish(Config::META_RESET_CALIBRATION, "{\"type\":\"pushbutton\"}", true);
+    network.publish(Config::META_CALIBRATE_OPEN, "{\"type\":\"pushbutton\"}", true);
     network.publish(Config::TOPIC_POSITION, String(motor.currentPositionPercent()), true);
     network.publish(Config::TOPIC_OPEN, "0", true);
     network.publish(Config::TOPIC_CLOSE, "0", true);
     network.publish(Config::TOPIC_STOP, "0", true);
     network.publish(Config::TOPIC_RECALIBRATE, "0", true);
     network.publish(Config::TOPIC_RESET_CALIBRATION, "0", true);
+    network.publish(Config::TOPIC_CALIBRATE_OPEN, "0", true);
 }
 
 void handleMessage(const char* topic, const String& msg) {
+    Serial.printf("MQTT message: %s => %s\n", topic, msg.c_str());
     if (strcmp(topic, Config::TOPIC_OPEN_SET) == 0) {
         motor.moveToPercent(100);
     } else if (strcmp(topic, Config::TOPIC_CLOSE_SET) == 0) {
@@ -42,6 +45,8 @@ void handleMessage(const char* topic, const String& msg) {
         motor.recalibrate();
     } else if (strcmp(topic, Config::TOPIC_RESET_CALIBRATION_SET) == 0) {
         motor.resetCalibration();
+    } else if (strcmp(topic, Config::TOPIC_CALIBRATE_OPEN_SET) == 0) {
+        motor.calibrateOpen();
     }
 }
 
