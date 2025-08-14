@@ -38,7 +38,8 @@ constexpr int  MOTOR_SPEED = 500;
 constexpr int  MOTOR_ACCEL = 300;
 constexpr int  STEP_DELAY_US = 1200;
 
-constexpr int EEPROM_SIZE = 8;
+constexpr int EEPROM_SIZE = 512;
+constexpr int EEPROM_SETTINGS_OFFSET = 8;
 constexpr long DEFAULT_MAX_STEPS = 4096;
 
 // Limit switch configuration

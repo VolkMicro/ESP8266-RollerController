@@ -4,6 +4,7 @@
 #include "NetworkManager.h"
 #include "Config.h"
 #include "Secrets.h"
+#include "Settings.h"
 
 MotorController motor;
 NetworkManager network;
@@ -53,6 +54,7 @@ void handleMessage(const char* topic, const String& msg) {
 void setup() {
     Serial.begin(115200);
     Serial.println("=== Roller Blind Controller Starting ===");
+    Settings::begin();
     ArduinoOTA.setPassword(OTA_PASSWORD);
     ArduinoOTA.begin();
     motor.begin();
