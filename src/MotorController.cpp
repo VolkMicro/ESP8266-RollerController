@@ -101,3 +101,9 @@ void MotorController::setMaxSteps(long steps) {
         LOGF("Max steps set to %ld\n", maxSteps);
     }
 }
+
+void MotorController::setSpeed(int speed, int accel) {
+    stepper.setMaxSpeed(speed);
+    stepper.setAcceleration(accel);
+    LOGF("Speed params updated: %d/%d\n", speed, accel);
+}

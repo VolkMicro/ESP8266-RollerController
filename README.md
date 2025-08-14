@@ -70,9 +70,10 @@ interface on port 80. Navigate to `http://<device-ip>/` to:
 - Open, close or stop the blind
 - Recalibrate closed and open positions
 - Set or reset the maximum step calibration
+- Adjust motor speed and acceleration for tuning
 
 The interface also provides a simple field to enter a new `Max Steps` value for
-manual calibration.
+manual calibration as well as fields to experiment with speed and acceleration.
 
 ## Over-the-Air Updates
 
