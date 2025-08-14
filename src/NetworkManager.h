@@ -19,4 +19,5 @@ private:
     WiFiClient wifiClient;
     PubSubClient mqttClient{wifiClient};
     MessageCallback callback;
+    unsigned long lastWifiReconnectAttempt = 0;
 };
