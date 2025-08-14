@@ -16,6 +16,8 @@ public:
     void recalibrate();
     void calibrateOpen();
     void resetCalibration();
+    void setMaxSteps(long steps);
+    long getMaxSteps() const { return maxSteps; }
     int  currentPositionPercent() const { return currentPosPercent; }
     RollerState state() const { return currentState; }
     void setPositionCallback(PositionCallback cb) { positionCb = std::move(cb); }

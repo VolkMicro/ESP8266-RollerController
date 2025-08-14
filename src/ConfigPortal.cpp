@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "Settings.h"
 #include "Config.h"
+#include "Logger.h"
 
 void ConfigPortal::begin() {
     WiFi.softAP("RollerSetup");
@@ -36,7 +37,7 @@ void ConfigPortal::begin() {
         ESP.restart();
     });
     server.begin();
-    Serial.println("Config portal started. Connect to AP 'RollerSetup'");
+    LOGLN("Config portal started. Connect to AP 'RollerSetup'");
 }
 
 void ConfigPortal::handle() {

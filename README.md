@@ -18,6 +18,12 @@ export OTA_PASSWORD="your_ota_password"
 PlatformIO reads these variables and injects them into the firmware at compile
 time. The secrets themselves remain outside the repository.
 
+After the device connects to your Wi-Fi network, open its IP address in a web
+browser to access the control page. The page shows live logs and provides
+buttons to open, close, or stop the blind. You can also calibrate the fully
+open and closed positions or set the maximum step count directly from the
+browser.
+
 ## Building
 
 Use [PlatformIO](https://platformio.org/) to build the project:
@@ -54,6 +60,19 @@ mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/calibrate_open/on -m 
 # Reset stored calibration data
 mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/reset_calibration/on -m 1
 ```
+
+## Local Web Interface
+
+When the ESP8266 successfully connects to your Wi-Fi network, it serves a web
+interface on port 80. Navigate to `http://<device-ip>/` to:
+
+- View live logs emitted by the controller
+- Open, close or stop the blind
+- Recalibrate closed and open positions
+- Set or reset the maximum step calibration
+
+The interface also provides a simple field to enter a new `Max Steps` value for
+manual calibration.
 
 ## Over-the-Air Updates
 

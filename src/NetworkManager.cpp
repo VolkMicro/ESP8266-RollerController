@@ -1,6 +1,7 @@
 #include "NetworkManager.h"
 #include <Arduino.h>
 #include <ArduinoOTA.h>
+#include "Logger.h"
 
 void NetworkManager::begin(MessageCallback cb) {
     callback = std::move(cb);
@@ -10,7 +11,7 @@ void NetworkManager::begin(MessageCallback cb) {
     const char* mqtt = strlen(cfg.mqttHost) ? cfg.mqttHost : MQTT_HOST;
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, pass);
-    Serial.printf("Connecting to WiFi: %s\n", ssid);
+    LOGF("Connecting to WiFi: %s\n", ssid);
     mqttClient.setServer(mqtt, 1883);
     mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) {
         if (length >= 100) {
@@ -23,7 +24,7 @@ void NetworkManager::begin(MessageCallback cb) {
         }
     });
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.println("WiFi connect failed, starting config portal");
+        LOGLN("WiFi connect failed, starting config portal");
         portal.begin();
         configMode = true;
     }
@@ -37,7 +38,7 @@ bool NetworkManager::update() {
     if (WiFi.status() != WL_CONNECTED) {
         unsigned long now = millis();
         if (now - lastWifiReconnectAttempt >= 5000) {
-            Serial.println("WiFi not connected");
+            LOGLN("WiFi not connected");
             // Throttle reconnect attempts to once every 5 seconds
             WiFi.reconnect();
             lastWifiReconnectAttempt = now;
@@ -55,9 +56,9 @@ bool NetworkManager::update() {
 void NetworkManager::handleReconnect() {
     auto &cfg = Settings::data();
     const char* mqtt = strlen(cfg.mqttHost) ? cfg.mqttHost : MQTT_HOST;
-    Serial.printf("Connecting to MQTT at %s...\n", mqtt);
+    LOGF("Connecting to MQTT at %s...\n", mqtt);
     if (mqttClient.connect("ESP8266_Roller")) {
-        Serial.println("MQTT connected");
+        LOGLN("MQTT connected");
         mqttClient.subscribe(Config::TOPIC_OPEN_SET);
         mqttClient.subscribe(Config::TOPIC_CLOSE_SET);
         mqttClient.subscribe(Config::TOPIC_STOP_SET);
@@ -66,7 +67,7 @@ void NetworkManager::handleReconnect() {
         mqttClient.subscribe(Config::TOPIC_RESET_CALIBRATION_SET);
         mqttClient.subscribe(Config::TOPIC_CALIBRATE_OPEN_SET);
     } else {
-        Serial.println("MQTT connection failed");
+        LOGLN("MQTT connection failed");
     }
 }
 
