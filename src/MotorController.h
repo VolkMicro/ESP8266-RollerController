@@ -14,6 +14,7 @@ public:
     void moveToPercent(int percent);
     void stop();
     void recalibrate();
+    void calibrateOpen();
     void resetCalibration();
     int  currentPositionPercent() const { return currentPosPercent; }
     RollerState state() const { return currentState; }
@@ -23,5 +24,6 @@ private:
     AccelStepper stepper{Config::MOTOR_INTERFACE, Config::MOTOR_PIN_1, Config::MOTOR_PIN_3, Config::MOTOR_PIN_2, Config::MOTOR_PIN_4};
     RollerState currentState{RollerState::Idle};
     int currentPosPercent{0};
+    long maxSteps{Config::DEFAULT_MAX_STEPS};
     PositionCallback positionCb;
 };
