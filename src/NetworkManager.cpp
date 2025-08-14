@@ -22,7 +22,13 @@ void NetworkManager::begin(MessageCallback cb) {
 
 bool NetworkManager::update() {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi not connected");
+        unsigned long now = millis();
+        if (now - lastWifiReconnectAttempt >= 5000) {
+            Serial.println("WiFi not connected");
+            // Throttle reconnect attempts to once every 5 seconds
+            WiFi.reconnect();
+            lastWifiReconnectAttempt = now;
+        }
         return false;
     }
     if (!mqttClient.connected()) {
