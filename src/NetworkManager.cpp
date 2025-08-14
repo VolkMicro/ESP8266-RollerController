@@ -4,10 +4,14 @@
 
 void NetworkManager::begin(MessageCallback cb) {
     callback = std::move(cb);
+    auto &cfg = Settings::data();
+    const char* ssid = strlen(cfg.ssid) ? cfg.ssid : WIFI_SSID;
+    const char* pass = strlen(cfg.password) ? cfg.password : WIFI_PASSWORD;
+    const char* mqtt = strlen(cfg.mqttHost) ? cfg.mqttHost : MQTT_HOST;
     WiFi.mode(WIFI_STA);
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    Serial.printf("Connecting to WiFi: %s\n", WIFI_SSID);
-    mqttClient.setServer(MQTT_HOST, 1883);
+    WiFi.begin(ssid, pass);
+    Serial.printf("Connecting to WiFi: %s\n", ssid);
+    mqttClient.setServer(mqtt, 1883);
     mqttClient.setCallback([this](char* topic, byte* payload, unsigned int length) {
         if (length >= 100) {
             return; // payload too large
@@ -18,9 +22,18 @@ void NetworkManager::begin(MessageCallback cb) {
             callback(topic, msg);
         }
     });
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+        Serial.println("WiFi connect failed, starting config portal");
+        portal.begin();
+        configMode = true;
+    }
 }
 
 bool NetworkManager::update() {
+    if (configMode) {
+        portal.handle();
+        return false;
+    }
     if (WiFi.status() != WL_CONNECTED) {
         unsigned long now = millis();
         if (now - lastWifiReconnectAttempt >= 5000) {
@@ -40,7 +53,9 @@ bool NetworkManager::update() {
 }
 
 void NetworkManager::handleReconnect() {
-    Serial.printf("Connecting to MQTT at %s...\n", MQTT_HOST);
+    auto &cfg = Settings::data();
+    const char* mqtt = strlen(cfg.mqttHost) ? cfg.mqttHost : MQTT_HOST;
+    Serial.printf("Connecting to MQTT at %s...\n", mqtt);
     if (mqttClient.connect("ESP8266_Roller")) {
         Serial.println("MQTT connected");
         mqttClient.subscribe(Config::TOPIC_OPEN_SET);

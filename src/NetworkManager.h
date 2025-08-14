@@ -5,6 +5,8 @@
 #include <functional>
 #include "Secrets.h"
 #include "Config.h"
+#include "Settings.h"
+#include "ConfigPortal.h"
 
 class NetworkManager {
 public:
@@ -20,4 +22,6 @@ private:
     PubSubClient mqttClient{wifiClient};
     MessageCallback callback;
     unsigned long lastWifiReconnectAttempt = 0;
+    bool configMode = false;
+    ConfigPortal portal;
 };
