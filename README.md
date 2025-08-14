@@ -1,22 +1,22 @@
 # ESP8266 Roller Controller
 
 This project controls a roller blind using an ESP8266 module. Wi-Fi and MQTT
-credentials are stored in a separate configuration header to keep secrets out of
+credentials are supplied at build time so they don't need to be stored in
 version control.
 
 ## Configuration
 
-Update `include/Secrets.h` with your network and MQTT settings:
+Before building, export the required credentials as environment variables:
 
-```cpp
-const char* WIFI_SSID = "your_wifi_ssid";
-const char* WIFI_PASSWORD = "your_wifi_password";
-const char* MQTT_HOST = "your.mqtt.host";
-const char* OTA_PASSWORD = "your_ota_password";
+```bash
+export WIFI_SSID="your_wifi_ssid"
+export WIFI_PASSWORD="your_wifi_password"
+export MQTT_HOST="your.mqtt.host"
+export OTA_PASSWORD="your_ota_password"
 ```
 
-The file is listed in `.gitignore` so local changes won't be committed
-accidentally.
+PlatformIO reads these variables and injects them into the firmware at compile
+time. The secrets themselves remain outside the repository.
 
 ## Building
 
@@ -57,8 +57,8 @@ mosquitto_pub -h <mqtt_host> -t /devices/roller_1/controls/reset_calibration/on 
 
 ## Over-the-Air Updates
 
-The firmware supports OTA updates using `ArduinoOTA`. Set an OTA password in
-`include/Secrets.h` and upload over the network with PlatformIO:
+The firmware supports OTA updates using `ArduinoOTA`. Ensure the `OTA_PASSWORD`
+environment variable is set and upload over the network with PlatformIO:
 
 ```bash
 pio run -t upload --upload-port <device-ip> --upload-password <your_ota_password>
