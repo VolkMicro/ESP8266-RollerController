@@ -5,9 +5,12 @@
 #include "Config.h"
 #include "Secrets.h"
 #include "Settings.h"
+#include "Logger.h"
+#include "WebInterface.h"
 
 MotorController motor;
 NetworkManager network;
+WebInterface web(motor);
 
 void publishMeta() {
     network.publish(Config::META_DEVICE, "{\"driver\":\"roller\",\"title\":{\"en\":\"Roller Blind\"}}", true);
@@ -28,7 +31,7 @@ void publishMeta() {
 }
 
 void handleMessage(const char* topic, const String& msg) {
-    Serial.printf("MQTT message: %s => %s\n", topic, msg.c_str());
+    LOGF("MQTT message: %s => %s\n", topic, msg.c_str());
     if (strcmp(topic, Config::TOPIC_OPEN_SET) == 0) {
         motor.moveToPercent(100);
     } else if (strcmp(topic, Config::TOPIC_CLOSE_SET) == 0) {
@@ -40,7 +43,7 @@ void handleMessage(const char* topic, const String& msg) {
         if (val >= 0 && val <= 100) {
             motor.moveToPercent(val);
         } else {
-            Serial.println("Invalid position value");
+            LOGLN("Invalid position value");
         }
     } else if (strcmp(topic, Config::TOPIC_RECALIBRATE_SET) == 0) {
         motor.recalibrate();
@@ -53,7 +56,7 @@ void handleMessage(const char* topic, const String& msg) {
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("=== Roller Blind Controller Starting ===");
+    LOGLN("=== Roller Blind Controller Starting ===");
     Settings::begin();
     ArduinoOTA.setPassword(OTA_PASSWORD);
     ArduinoOTA.begin();
@@ -62,6 +65,7 @@ void setup() {
         network.publish(Config::TOPIC_POSITION, String(pos), true);
     });
     network.begin(handleMessage);
+    web.begin();
 }
 
 void loop() {
@@ -70,5 +74,6 @@ void loop() {
         publishMeta();
     }
     motor.update();
+    web.handle();
 }
 

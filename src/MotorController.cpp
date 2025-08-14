@@ -1,5 +1,6 @@
 #include "MotorController.h"
 #include <Arduino.h>
+#include "Logger.h"
 
 void MotorController::begin() {
     stepper.setMaxSpeed(Config::MOTOR_SPEED);
@@ -15,20 +16,20 @@ void MotorController::begin() {
     }
     long savedSteps = map(currentPosPercent, 0, 100, 0, maxSteps);
     stepper.setCurrentPosition(savedSteps);
-    Serial.printf("Loaded position: %d%% (%ld/%ld steps)\n", currentPosPercent, savedSteps, maxSteps);
+    LOGF("Loaded position: %d%% (%ld/%ld steps)\n", currentPosPercent, savedSteps, maxSteps);
 }
 
 void MotorController::update() {
     if (currentState == RollerState::Moving) {
         stepper.run();
         long cur = stepper.currentPosition();
-        Serial.printf("Step %ld/%ld (%d%%)\n", cur, stepper.targetPosition(), (int)map(cur, 0, maxSteps, 0, 100));
+        LOGF("Step %ld/%ld (%d%%)\n", cur, stepper.targetPosition(), (int)map(cur, 0, maxSteps, 0, 100));
         if (stepper.distanceToGo() == 0) {
             currentState = RollerState::Idle;
             currentPosPercent = map(cur, 0, maxSteps, 0, 100);
             EEPROM.put(0, currentPosPercent);
             EEPROM.commit();
-            Serial.printf("Movement complete: %d%% (%ld steps)\n", currentPosPercent, cur);
+            LOGF("Movement complete: %d%% (%ld steps)\n", currentPosPercent, cur);
             if (positionCb) {
                 positionCb(currentPosPercent);
             }
@@ -38,7 +39,7 @@ void MotorController::update() {
 
 void MotorController::moveToPercent(int percent) {
     long targetSteps = map(percent, 0, 100, 0, maxSteps);
-    Serial.printf("Move request: %d%% -> %ld steps (current %ld)\n", percent, targetSteps, stepper.currentPosition());
+    LOGF("Move request: %d%% -> %ld steps (current %ld)\n", percent, targetSteps, stepper.currentPosition());
     stepper.moveTo(targetSteps);
     currentState = RollerState::Moving;
 }
@@ -46,7 +47,7 @@ void MotorController::moveToPercent(int percent) {
 void MotorController::stop() {
     stepper.stop();
     currentState = RollerState::Idle;
-    Serial.printf("Movement stopped at %ld steps (%d%%)\n", stepper.currentPosition(), (int)map(stepper.currentPosition(), 0, maxSteps, 0, 100));
+    LOGF("Movement stopped at %ld steps (%d%%)\n", stepper.currentPosition(), (int)map(stepper.currentPosition(), 0, maxSteps, 0, 100));
 }
 
 void MotorController::recalibrate() {
@@ -55,7 +56,7 @@ void MotorController::recalibrate() {
     EEPROM.put(0, currentPosPercent);
     EEPROM.put(sizeof(currentPosPercent), maxSteps);
     EEPROM.commit();
-    Serial.println("Calibrated closed position");
+    LOGLN("Calibrated closed position");
     if (positionCb) {
         positionCb(currentPosPercent);
     }
@@ -70,7 +71,7 @@ void MotorController::calibrateOpen() {
     EEPROM.put(0, currentPosPercent);
     EEPROM.put(sizeof(currentPosPercent), maxSteps);
     EEPROM.commit();
-    Serial.printf("Calibrated open position: %ld steps\n", maxSteps);
+    LOGF("Calibrated open position: %ld steps\n", maxSteps);
     if (positionCb) {
         positionCb(currentPosPercent);
     }
@@ -85,9 +86,18 @@ void MotorController::resetCalibration() {
     stepper.setCurrentPosition(0);
     currentPosPercent = 0;
     maxSteps = Config::DEFAULT_MAX_STEPS;
-    Serial.println("Calibration data reset");
+    LOGLN("Calibration data reset");
     if (positionCb) {
         positionCb(currentPosPercent);
     }
 }
 
+
+void MotorController::setMaxSteps(long steps) {
+    if (steps > 0) {
+        maxSteps = steps;
+        EEPROM.put(sizeof(currentPosPercent), maxSteps);
+        EEPROM.commit();
+        LOGF("Max steps set to %ld\n", maxSteps);
+    }
+}
