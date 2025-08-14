@@ -34,9 +34,10 @@ constexpr int  MOTOR_PIN_2 = D2;
 constexpr int  MOTOR_PIN_3 = D3;
 constexpr int  MOTOR_PIN_4 = D4;
 constexpr auto MOTOR_INTERFACE = AccelStepper::HALF4WIRE;
-constexpr int  MOTOR_SPEED = 500;
-constexpr int  MOTOR_ACCEL = 300;
-constexpr int  STEP_DELAY_US = 1200;
+// Increased defaults for faster curtain movement
+constexpr int  MOTOR_SPEED = 1000;
+constexpr int  MOTOR_ACCEL = 600;
+constexpr int  STEP_DELAY_US = 800;
 
 constexpr int EEPROM_SIZE = 512;
 constexpr int EEPROM_SETTINGS_OFFSET = 8;
