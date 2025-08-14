@@ -17,6 +17,10 @@ void WebInterface::begin() {
             "<h2>Calibration</h2>"
             "<input id='steps' type='number' placeholder='Max Steps'>"
             "<button onclick=\"fetch('/set_steps?steps='+document.getElementById('steps').value)\">Save</button>"
+            "<h2>Speed</h2>"
+            "<input id='speed' type='number' placeholder='Speed'>"
+            "<input id='accel' type='number' placeholder='Acceleration'>"
+            "<button onclick=\"fetch('/set_speed?speed='+document.getElementById('speed').value+'&accel='+document.getElementById('accel').value)\">Save</button>"
             "<pre id='logs'></pre>"
             "<script>async function upd(){document.getElementById('logs').textContent=await (await fetch('/logs')).text();}setInterval(upd,1000);upd();</script>"
             "</body></html>";
@@ -32,6 +36,14 @@ void WebInterface::begin() {
         if (server.hasArg("steps")) {
             long steps = server.arg("steps").toInt();
             motor.setMaxSteps(steps);
+        }
+        server.send(200, "text/plain", "OK");
+    });
+    server.on("/set_speed", [this]() {
+        if (server.hasArg("speed") && server.hasArg("accel")) {
+            int speed = server.arg("speed").toInt();
+            int accel = server.arg("accel").toInt();
+            motor.setSpeed(speed, accel);
         }
         server.send(200, "text/plain", "OK");
     });

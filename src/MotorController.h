@@ -17,6 +17,7 @@ public:
     void calibrateOpen();
     void resetCalibration();
     void setMaxSteps(long steps);
+    void setSpeed(int speed, int accel);
     long getMaxSteps() const { return maxSteps; }
     int  currentPositionPercent() const { return currentPosPercent; }
     RollerState state() const { return currentState; }
